@@ -13,7 +13,12 @@ app.use(express.json({ limit: '10mb' })); // Límite amplio para recibir fotos e
 
 // Ruta raíz de prueba
 app.get('/', (req, res) => {
-    res.json({ success: true, message: 'Servidor Backend activo y funcionando' });
+    res.json({
+        success: true,
+        message: 'Servidor Backend activo y funcionando',
+        data: null,
+        error: null,
+    });
 });
 
 // Rutas
