@@ -102,7 +102,8 @@ export const login = async (req: Request, res: Response) => {
             return sendResponse(res, 404, false, 'Usuario o correo no encontrado', null, 'USER_NOT_FOUND');
         }
 
-        const passwordDB = String(user.contrasena).trim();
+        const rawDbPass = user.getDataValue('contrasena') ?? user.contrasena ?? (user as any).dataValues?.contrasena;
+        const passwordDB = String(rawDbPass).trim();
         const passwordInput = cleanPass;
 
         console.log(`[LOGIN] Usuario encontrado: "${user.usuario}" (ID: ${user.id})`);
@@ -126,7 +127,7 @@ export const login = async (req: Request, res: Response) => {
         }
 
         console.log(`[LOGIN] Login exitoso para el usuario: "${user.usuario}"`);
-        const userResponse = user.toJSON() as any;
+        const userResponse = user.get({ plain: true }) || user.toJSON();
 
         return sendResponse(res, 200, true, 'Login exitoso', userResponse);
     } catch (error: any) {
