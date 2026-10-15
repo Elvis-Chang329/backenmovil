@@ -71,7 +71,10 @@ export const login = async (req: Request, res: Response) => {
         // Permite iniciar sesión tanto con el nombre de usuario como con el email
         const user = await User.findOne({
             where: {
-                [Op.or]: [{ usuario: userIdentifier }, { email: userIdentifier }]
+                [Op.or]: [
+                    { usuario: String(userIdentifier).trim() },
+                    { email: String(userIdentifier).trim() }
+                ]
             }
         });
 
@@ -79,8 +82,14 @@ export const login = async (req: Request, res: Response) => {
             return sendResponse(res, 404, false, 'Usuario o correo no encontrado', null, 'USER_NOT_FOUND');
         }
 
-        // Comparación directa en texto plano (sin encriptación)
-        if (user.contrasena !== pass) {
+        const passwordDB = String(user.contrasena).trim();
+        const passwordInput = String(pass).trim();
+
+        console.log(`[LOGIN] Usuario: "${userIdentifier}"`);
+        console.log(`[LOGIN] Comparando passInput="${passwordInput}" con passDB="${passwordDB}"`);
+
+        // Comparación directa en texto plano (ignorando espacios accidentales y diferencias de tipo)
+        if (passwordDB !== passwordInput) {
             return sendResponse(res, 401, false, 'Contraseña incorrecta', null, 'INVALID_PASSWORD');
         }
 
