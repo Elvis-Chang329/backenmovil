@@ -48,7 +48,6 @@ export const register = async (req: Request, res: Response) => {
         });
 
         const userResponse = newUser.toJSON() as any;
-        delete userResponse.contrasena;
 
         return sendResponse(res, 201, true, 'Usuario registrado exitosamente', userResponse);
     } catch (error: any) {
@@ -94,7 +93,6 @@ export const login = async (req: Request, res: Response) => {
         }
 
         const userResponse = user.toJSON() as any;
-        delete userResponse.contrasena;
 
         return sendResponse(res, 200, true, 'Login exitoso', userResponse);
     } catch (error: any) {
