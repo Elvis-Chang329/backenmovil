@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import { Op } from 'sequelize';
 import User from '../models/user.model';
-import bcrypt from 'bcryptjs';
 
 const sendResponse = (res: Response, statusCode: number, success: boolean, message: string, data: any = null, error: any = null) => {
     return res.status(statusCode).json({
@@ -16,7 +15,10 @@ export const register = async (req: Request, res: Response) => {
     try {
         const { nombre, apellido, email, usuario, contrasena, edad, fechaNacimiento, telefono, foto } = req.body;
 
-        if (!nombre || !apellido || !email || !usuario || !contrasena || !edad || !fechaNacimiento) {
+        // Soporte por si envían 'password' o 'contraseña'
+        const passwordToSave = contrasena || req.body['contraseña'] || req.body.password;
+
+        if (!nombre || !apellido || !email || !usuario || !passwordToSave || !edad || !fechaNacimiento) {
             return sendResponse(res, 400, false, 'Faltan campos obligatorios para el registro', null, 'MISSING_FIELDS');
         }
 
@@ -32,15 +34,13 @@ export const register = async (req: Request, res: Response) => {
             return sendResponse(res, 400, false, 'El correo electrónico ya está registrado', null, 'EMAIL_EXISTS');
         }
 
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(contrasena, salt);
-
+        // Guardar directamente en texto plano sin encriptar
         const newUser = await User.create({
             nombre,
             apellido,
             email,
             usuario,
-            contrasena: hashedPassword,
+            contrasena: passwordToSave,
             edad,
             fechaNacimiento,
             telefono,
@@ -59,16 +59,19 @@ export const register = async (req: Request, res: Response) => {
 
 export const login = async (req: Request, res: Response) => {
     try {
-        const { usuario, contrasena } = req.body;
+        // Acepta usuario, email o username
+        const userIdentifier = req.body.usuario || req.body.email || req.body.username;
+        // Acepta contrasena, contraseña o password
+        const pass = req.body.contrasena || req.body['contraseña'] || req.body.password;
 
-        if (!usuario || !contrasena) {
+        if (!userIdentifier || !pass) {
             return sendResponse(res, 400, false, 'Debes proporcionar usuario/correo y contraseña', null, 'MISSING_CREDENTIALS');
         }
 
         // Permite iniciar sesión tanto con el nombre de usuario como con el email
         const user = await User.findOne({
             where: {
-                [Op.or]: [{ usuario }, { email: usuario }]
+                [Op.or]: [{ usuario: userIdentifier }, { email: userIdentifier }]
             }
         });
 
@@ -76,8 +79,8 @@ export const login = async (req: Request, res: Response) => {
             return sendResponse(res, 404, false, 'Usuario o correo no encontrado', null, 'USER_NOT_FOUND');
         }
 
-        const isMatch = await bcrypt.compare(contrasena, user.contrasena);
-        if (!isMatch) {
+        // Comparación directa en texto plano (sin encriptación)
+        if (user.contrasena !== pass) {
             return sendResponse(res, 401, false, 'Contraseña incorrecta', null, 'INVALID_PASSWORD');
         }
 
