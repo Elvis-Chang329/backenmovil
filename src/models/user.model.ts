@@ -11,7 +11,7 @@ interface UserAttributes {
     edad: number;
     fechaNacimiento: string;
     telefono: string;
-    foto?: string;
+    foto?: string | null;
 }
 
 interface UserCreationAttributes extends Optional<UserAttributes, 'id'> { }
@@ -26,7 +26,7 @@ class User extends Model<UserAttributes, UserCreationAttributes> implements User
     declare edad: number;
     declare fechaNacimiento: string;
     declare telefono: string;
-    declare foto?: string;
+    declare foto?: string | null;
 }
 
 User.init(

@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { Op } from 'sequelize';
 import User from '../models/user.model';
 import bcrypt from 'bcryptjs';
+import { parsePhotoData } from '../utils/photo.util';
 
 const sendResponse = (res: Response, statusCode: number, success: boolean, message: string, data: any = null, error: any = null) => {
     return res.status(statusCode).json({
@@ -49,6 +50,10 @@ export const register = async (req: Request, res: Response) => {
             return sendResponse(res, 400, false, 'El correo electrónico ya está registrado', null, 'EMAIL_EXISTS');
         }
 
+        // Extraer y normalizar foto si fue enviada (como Base64, byteArray, multipart o raw)
+        const parsedPhoto = parsePhotoData(req);
+        const fotoFinal = parsedPhoto ? parsedPhoto.base64 : (foto ? String(foto).trim() : null);
+
         // Guardar directamente en texto plano sin encriptar
         const newUser = await User.create({
             nombre: cleanNombre,
@@ -59,10 +64,11 @@ export const register = async (req: Request, res: Response) => {
             edad: Number(edad),
             fechaNacimiento,
             telefono: telefono ? String(telefono).trim() : '',
-            foto: foto || null,
+            foto: fotoFinal,
         });
 
         const userResponse = newUser.toJSON() as any;
+        userResponse.hasFoto = Boolean(userResponse.foto && String(userResponse.foto).trim().length > 0);
 
         return sendResponse(res, 201, true, 'Usuario registrado exitosamente', userResponse);
     } catch (error: any) {
@@ -127,7 +133,8 @@ export const login = async (req: Request, res: Response) => {
         }
 
         console.log(`[LOGIN] Login exitoso para el usuario: "${user.usuario}"`);
-        const userResponse = user.get({ plain: true }) || user.toJSON();
+        const userResponse: any = user.get({ plain: true }) || user.toJSON();
+        userResponse.hasFoto = Boolean(userResponse.foto && String(userResponse.foto).trim().length > 0);
 
         return sendResponse(res, 200, true, 'Login exitoso', userResponse);
     } catch (error: any) {
