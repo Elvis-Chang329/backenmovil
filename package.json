@@ -6,7 +6,8 @@
     "scripts": {
         "build": "tsc",
         "start": "node dist/app.js",
-        "dev": "ts-node-dev --respawn --transpile-only src/app.ts"
+        "dev": "ts-node-dev --respawn --transpile-only src/app.ts",
+        "seed:masivo": "ts-node scripts/seed_masivo.ts"
     },
     "dependencies": {
         "@types/multer": "^2.3.0",

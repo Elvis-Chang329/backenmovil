@@ -15,7 +15,7 @@ const sendResponse = (res: Response, statusCode: number, success: boolean, messa
 
 export const register = async (req: Request, res: Response) => {
     try {
-        const { nombre, apellido, email, usuario, contrasena, edad, fechaNacimiento, telefono, foto } = req.body;
+        const { nombre, apellido, email, usuario, contrasena, edad, fechaNacimiento, telefono, foto, rol } = req.body;
 
         // Soporte por si envían 'password' o 'contraseña'
         const rawPassword = contrasena || req.body['contraseña'] || req.body.password;
@@ -29,6 +29,7 @@ export const register = async (req: Request, res: Response) => {
         const cleanEmail = String(email).trim();
         const cleanUsuario = String(usuario).trim();
         const cleanPassword = String(rawPassword).trim();
+        const userRol = (rol && String(rol).toLowerCase() === 'administrador') ? 'administrador' : 'censista';
 
         // Verificar si el usuario ya existe (insensible a mayúsculas)
         const existingUser = await User.findOne({ 
@@ -64,6 +65,7 @@ export const register = async (req: Request, res: Response) => {
             edad: Number(edad),
             fechaNacimiento,
             telefono: telefono ? String(telefono).trim() : '',
+            rol: userRol,
             foto: fotoFinal,
         });
 

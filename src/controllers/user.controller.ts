@@ -94,7 +94,7 @@ export const updateUser = async (req: Request, res: Response) => {
             return sendResponse(res, 404, false, 'Usuario no encontrado', null, 'USER_NOT_FOUND');
         }
 
-        const { nombre, apellido, email, telefono, edad, fechaNacimiento } = req.body;
+        const { nombre, apellido, email, telefono, edad, fechaNacimiento, rol } = req.body;
 
         // Si enviaron foto o byteArray en la actualización
         const parsedPhoto = parsePhotoData(req);
@@ -106,6 +106,9 @@ export const updateUser = async (req: Request, res: Response) => {
         if (telefono !== undefined) updateData.telefono = String(telefono).trim();
         if (edad !== undefined) updateData.edad = Number(edad);
         if (fechaNacimiento !== undefined) updateData.fechaNacimiento = fechaNacimiento;
+        if (rol !== undefined && ['censista', 'administrador'].includes(String(rol).toLowerCase())) {
+            updateData.rol = String(rol).toLowerCase();
+        }
         if (parsedPhoto) updateData.foto = parsedPhoto.base64;
 
         await user.update(updateData);

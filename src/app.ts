@@ -4,6 +4,8 @@ import dotenv from 'dotenv';
 import sequelize from './config/database';
 import authRoutes from './routes/auth.routes';
 import userRoutes from './routes/user.routes';
+import censoRoutes from './routes/censo.routes';
+import { seedAdminUser } from './utils/seedAdmin';
 
 dotenv.config();
 
@@ -29,6 +31,7 @@ app.get('/', (req, res) => {
 // Rutas
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/censos', censoRoutes);
 
 const PORT = process.env.PORT || 3000;
 
@@ -37,6 +40,10 @@ const startServer = async (retries = 5, delayMs = 3000) => {
         try {
             await sequelize.sync({ alter: true });
             console.log('Base de datos sincronizada correctamente');
+            
+            // Garantizar la existencia del usuario administrador en la base de datos
+            await seedAdminUser();
+
             app.listen(PORT, () => {
                 console.log(`Servidor TypeScript corriendo en el puerto ${PORT}`);
             });

@@ -11,10 +11,11 @@ interface UserAttributes {
     edad: number;
     fechaNacimiento: string;
     telefono: string;
+    rol: string; // 'censista' o 'administrador'
     foto?: string | null;
 }
 
-interface UserCreationAttributes extends Optional<UserAttributes, 'id'> { }
+interface UserCreationAttributes extends Optional<UserAttributes, 'id' | 'rol'> { }
 
 class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
     declare id: number;
@@ -26,6 +27,7 @@ class User extends Model<UserAttributes, UserCreationAttributes> implements User
     declare edad: number;
     declare fechaNacimiento: string;
     declare telefono: string;
+    declare rol: string;
     declare foto?: string | null;
 }
 
@@ -69,6 +71,14 @@ User.init(
         telefono: {
             type: DataTypes.STRING,
             allowNull: false,
+        },
+        rol: {
+            type: DataTypes.STRING(20),
+            allowNull: false,
+            defaultValue: 'censista',
+            validate: {
+                isIn: [['censista', 'administrador']]
+            }
         },
         foto: {
             type: DataTypes.TEXT, // Soporta Base64 para la foto de la cámara/galería
