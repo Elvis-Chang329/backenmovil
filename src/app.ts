@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { RekognitionClient, CreateFaceLivenessSessionCommand } from '@aws-sdk/client-rekognition';
+import { RekognitionClient, CreateFaceLivenessSessionCommand, GetFaceLivenessSessionResultsCommand } from '@aws-sdk/client-rekognition';
 import sequelize from './config/database';
 import authRoutes from './routes/auth.routes';
 import userRoutes from './routes/user.routes';
@@ -58,6 +58,29 @@ app.post("/api/liveness/create-session", async (req, res) => {
         });
     } catch (error: any) {
         console.error("Error al crear la sesión de liveness:", error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Endpoint para verificar los resultados finales de la sesión de Liveness
+app.get("/api/liveness/session-results/:sessionId", async (req, res) => {
+    try {
+        const { sessionId } = req.params;
+
+        const command = new GetFaceLivenessSessionResultsCommand({
+            SessionId: sessionId,
+        });
+
+        const response = await rekognitionClient.send(command);
+
+        // Devolvemos el estado de la verificación a tu app Android en formato JSON puro
+        res.json({
+            status: response.Status, // Ej: SUCCEEDED, FAILED, CREATED, IN_PROGRESS
+            confidence: response.Confidence, // Nivel de confianza
+            referenceImage: response.ReferenceImage // Imagen de referencia capturada
+        });
+    } catch (error: any) {
+        console.error("Error al obtener los resultados de liveness:", error);
         res.status(500).json({ error: error.message });
     }
 });
