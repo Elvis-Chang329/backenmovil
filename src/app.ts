@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { RekognitionClient, CreateFaceLivenessSessionCommand } from '@aws-sdk/client-rekognition';
 import sequelize from './config/database';
 import authRoutes from './routes/auth.routes';
 import userRoutes from './routes/user.routes';
@@ -10,6 +11,11 @@ import { seedAdminUser } from './utils/seedAdmin';
 dotenv.config();
 
 const app = express();
+
+// Inicializamos el cliente de Rekognition (el SDK leerá automáticamente tu .env)
+const rekognitionClient = new RekognitionClient({
+    region: process.env.AWS_REGION || "us-east-1"
+});
 
 app.use(cors());
 
@@ -32,6 +38,23 @@ app.get('/', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/censos', censoRoutes);
+
+// Endpoint que llamará tu app de Android
+app.post("/api/liveness/create-session", async (req, res) => {
+    try {
+        // Comando para crear la sesión de Liveness en AWS
+        const command = new CreateFaceLivenessSessionCommand({});
+        const response = await rekognitionClient.send(command);
+        
+        // Devolvemos el SessionId en formato JSON hacia tu app Android
+        res.json({
+            sessionId: response.SessionId
+        });
+    } catch (error: any) {
+        console.error("Error al crear la sesión de liveness:", error);
+        res.status(500).json({ error: error.message });
+    }
+});
 
 const PORT = process.env.PORT || 3000;
 

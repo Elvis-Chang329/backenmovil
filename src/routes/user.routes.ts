@@ -1,13 +1,13 @@
 import { Router } from 'express';
 import multer from 'multer';
-import { 
-    getUsers, 
-    getUserById, 
-    updateUser, 
-    uploadUserPhoto, 
-    getUserPhoto, 
-    getUserPhotoRaw, 
-    deleteUserPhoto 
+import {
+    getUsers,
+    getUserById,
+    updateUser,
+    uploadUserPhoto,
+    getUserPhoto,
+    getUserPhotoRaw,
+    deleteUserPhoto
 } from '../controllers/user.controller';
 import { register, login } from '../controllers/auth.controller';
 

@@ -10,6 +10,7 @@
         "seed:masivo": "ts-node scripts/seed_masivo.ts"
     },
     "dependencies": {
+        "@aws-sdk/client-rekognition": "^3.1160.0",
         "@types/multer": "^2.3.0",
         "bcryptjs": "^2.4.3",
         "cors": "^2.8.5",
